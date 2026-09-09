@@ -126,8 +126,8 @@ def main() -> int:
     parser.add_argument(
         "--webp-quality",
         type=int,
-        default=80,
-        help="WebP quality for embedded PNG/JPEG images (0-100; default: 80)",
+        default=78,
+        help="WebP quality for embedded PNG/JPEG images (0-100; default: 78)",
     )
     parser.add_argument(
         "--no-webp",

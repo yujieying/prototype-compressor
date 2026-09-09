@@ -26,7 +26,7 @@ Do not use it to create an archive, split resources, or replace the original pro
    Resolve `scripts/compress_prototype.py` relative to this SKILL.md, or run from the skill directory with an absolute input path. Requires Python 3.10+ and `cwebp` on PATH. No Node.js or npm dependencies are needed.
 
    It writes a sibling file named `PROTO-xxx.min.html`. Re-running refreshes that delivery copy and never changes the source file.
-3. By default, the script converts embedded PNG/JPEG data URIs to WebP at quality 80, but only substitutes a WebP image when it is smaller. SVG data URIs remain unchanged. Use `--webp-quality 90` when visual fidelity takes priority, or `--no-webp` for an unchanged comparison copy.
+3. By default, the script converts embedded PNG/JPEG data URIs to WebP at quality 78, but only substitutes a WebP image when it is smaller. SVG data URIs remain unchanged. Use `--webp-quality 90` when visual fidelity takes priority, or `--no-webp` for an unchanged comparison copy.
 4. Report each source/output path, byte counts, reduction percentage, and converted-image count.
 5. For a newly generated or materially changed prototype, open the `.min.html` in a browser or perform an equivalent focused preview check before treating it as share-ready.
 
