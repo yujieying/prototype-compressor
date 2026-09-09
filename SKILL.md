@@ -23,17 +23,16 @@ Do not use it to create an archive, split resources, or replace the original pro
    python3 scripts/compress_prototype.py /absolute/path/to/PROTO-xxx.html
    ```
 
-   Resolve `scripts/compress_prototype.py` relative to this SKILL.md, or run from the skill directory with an absolute input path. Requires Python 3.10+, Node.js 18+, and `npm ci --ignore-scripts` in the skill directory. Default image conversion also requires `cwebp` on PATH; `--no-webp` skips only that dependency.
+   Resolve `scripts/compress_prototype.py` relative to this SKILL.md, or run from the skill directory with an absolute input path. Requires Python 3.10+ and `cwebp` on PATH. No Node.js or npm dependencies are needed.
 
    It writes a sibling file named `PROTO-xxx.min.html`. Re-running refreshes that delivery copy and never changes the source file.
-3. By default, the script converts embedded PNG/JPEG data URIs to WebP at quality 80, but only substitutes a WebP image when it is smaller. SVG data URIs remain unchanged. Use `--webp-quality 90` when visual fidelity takes priority, or `--no-webp` for markup-only comparison.
+3. By default, the script converts embedded PNG/JPEG data URIs to WebP at quality 80, but only substitutes a WebP image when it is smaller. SVG data URIs remain unchanged. Use `--webp-quality 90` when visual fidelity takes priority, or `--no-webp` for an unchanged comparison copy.
 4. Report each source/output path, byte counts, reduction percentage, and converted-image count.
 5. For a newly generated or materially changed prototype, open the `.min.html` in a browser or perform an equivalent focused preview check before treating it as share-ready.
 
 ## Compression boundary
 
-- HTML/CSS compression uses html-minifier-terser with conservative whitespace collapse and level-1 CSS minification. HTML comments are retained because prototype tools may use them as markers.
-- JavaScript minification, optional-tag removal, URL rewriting and attribute-quote removal are disabled. Preview the output to verify whitespace-sensitive layouts.
+- Preserve HTML/CSS/JavaScript text, comments and whitespace. Only embedded raster image data URIs are replaced; no text minification is performed.
 - It converts only embedded PNG/JPEG data URIs. This is lossy at the selected WebP quality; source images and SVG data URIs remain unchanged in the original prototype.
 - It intentionally does not minify JavaScript, resize images, or change external resources.
 

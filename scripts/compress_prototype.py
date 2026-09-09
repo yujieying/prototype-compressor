@@ -18,19 +18,6 @@ RASTER_DATA_URI_PATTERN = re.compile(
 )
 
 
-def minify_markup(content: str) -> str:
-    node = shutil.which("node")
-    if not node:
-        raise RuntimeError("Node.js is required for html-minifier-terser")
-    result = subprocess.run(
-        [node, str(Path(__file__).with_name("minify_html.cjs"))],
-        input=content, capture_output=True, encoding="utf-8", timeout=120,
-    )
-    if result.returncode:
-        raise RuntimeError(result.stderr.strip() or "HTML minification failed")
-    return result.stdout
-
-
 def data_uri_bytes(content: str) -> int:
     return sum(len(match.group(0).encode("utf-8")) for match in re.finditer(r"data:[^\"'\s>]+", content))
 
@@ -105,13 +92,13 @@ def compress(source: Path, webp_quality: int | None) -> None:
     if ".min" in source.stem:
         raise ValueError("refusing to recompress an existing .min.html delivery file")
 
-    original = source.read_text(encoding="utf-8")
-    compressed = minify_markup(original)
+    original = source.read_bytes().decode("utf-8")
+    compressed = original
     image_stats = None
     if webp_quality is not None:
         compressed, image_stats = convert_raster_data_uris(compressed, webp_quality)
     destination = output_path(source)
-    destination.write_text(compressed, encoding="utf-8")
+    destination.write_bytes(compressed.encode("utf-8"))
 
     before = len(original.encode("utf-8"))
     after = len(compressed.encode("utf-8"))
@@ -145,7 +132,7 @@ def main() -> int:
     parser.add_argument(
         "--no-webp",
         action="store_true",
-        help="skip embedded PNG/JPEG conversion and only minify markup",
+        help="copy the original without image conversion for comparison",
     )
     args = parser.parse_args()
     if not 0 <= args.webp_quality <= 100:
