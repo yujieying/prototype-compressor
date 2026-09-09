@@ -4,7 +4,7 @@
 
 ## 功能
 
-- 压缩 HTML/CSS 注释和格式空白。
+- 使用 html-minifier-terser 压缩 HTML/CSS，保留 HTML 标记注释。
 - 内嵌 PNG/JPEG 转为质量 80 的 WebP，仅在图片变小时替换。
 - 保留图片尺寸及 SVG，不引入外部资源文件。
 - 输出压缩前后字节数、压缩比例和图片转换数量。
@@ -12,12 +12,13 @@
 
 ## 环境与运行
 
-需要 Python 3.10+；默认图片转换还需要 `cwebp` 在 PATH 中。macOS 可以通过 Homebrew 安装：
+需要 Python 3.10+、Node.js 18+；默认图片转换还需要 `cwebp` 在 PATH 中。macOS 可以通过 Homebrew 安装：
 
 ```bash
 brew install webp
 git clone https://github.com/yujieying/prototype-compressor.git
 cd prototype-compressor
+npm ci --ignore-scripts
 python3 scripts/compress_prototype.py /absolute/path/to/PROTO.html
 ```
 
@@ -27,7 +28,7 @@ python3 scripts/compress_prototype.py /absolute/path/to/PROTO.html
 # 提高图片质量
 python3 scripts/compress_prototype.py --webp-quality 90 /absolute/path/to/PROTO.html
 
-# 仅压缩 HTML/CSS，不转换图片，无需 cwebp
+# 仅压缩 HTML/CSS，不转换图片，无需 cwebp，仍需要 Node.js 及 npm 依赖
 python3 scripts/compress_prototype.py --no-webp /absolute/path/to/PROTO.html
 ```
 
@@ -37,12 +38,14 @@ python3 scripts/compress_prototype.py --no-webp /absolute/path/to/PROTO.html
 
 ```bash
 git clone https://github.com/yujieying/prototype-compressor.git ~/.codex/skills/prototype-compressor
+cd ~/.codex/skills/prototype-compressor
+npm ci --ignore-scripts
 ```
 
 目标目录已经存在时，应先核对现有 Skill，再决定同步方式。也可以让 AI 直接读取本仓库的 `SKILL.md` 后执行。原型生成流程在保存 HTML 后调用此 Skill 即可。
 
 ## 使用边界
 
-WebP 质量 80 为有损压缩，输出应抽查图片和交互。当前 HTML/CSS 压缩使用正则处理，并非完整语法解析器，特殊 CSS 字符串、空白语义等场景仍可能受影响，不能保证任意 HTML 的渲染完全一致。需求变更应继续修改原文件，再重新压缩。
+WebP 质量 80 为有损压缩，输出应抽查图片和交互。HTML/CSS 使用 html-minifier-terser 保守配置：保留 HTML 注释、属性引号和可选标签，关闭 JavaScript 压缩、URL 改写，CSS 使用一级压缩。空白敏感布局仍需预览验证。需求变更应继续修改原文件，再重新压缩。
 
 上传服务若扫描所有 `*.html`，需明确选择压缩副本，避免同时上传原版。`html.md` 附件命名由上传流程处理，本工具不负责上传或改名。

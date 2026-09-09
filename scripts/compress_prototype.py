@@ -10,72 +10,25 @@ import shutil
 import subprocess
 import tempfile
 from pathlib import Path
-from typing import Callable
 
 
-RAW_TAG_PATTERN = re.compile(
-    r"(?is)<(script|style|pre|textarea)\b[^>]*>.*?</\1\s*>"
-)
-COMMENT_PATTERN = re.compile(r"(?s)<!--(.*?)-->")
-TAG_PATTERN = re.compile(r"(?s)<[^>]*>")
-CSS_COMMENT_PATTERN = re.compile(r"(?s)/\*(?!\!)(.*?)\*/")
 RASTER_DATA_URI_PATTERN = re.compile(
     r"data:image/(?P<format>png|jpe?g);base64,(?P<payload>[A-Za-z0-9+/=]+)",
     re.IGNORECASE,
 )
 
 
-def placeholder_blocks(content: str, pattern: re.Pattern[str], transform: Callable[[str], str]):
-    blocks: list[str] = []
-
-    def replace(match: re.Match[str]) -> str:
-        blocks.append(transform(match.group(0)))
-        return f"@@PROTO_BLOCK_{len(blocks) - 1}@@"
-
-    return pattern.sub(replace, content), blocks
-
-
-def restore_blocks(content: str, blocks: list[str]) -> str:
-    for index, block in enumerate(blocks):
-        content = content.replace(f"@@PROTO_BLOCK_{index}@@", block)
-    return content
-
-
-def minify_css_block(block: str) -> str:
-    opening = block.find(">")
-    closing = block.lower().rfind("</style")
-    if opening == -1 or closing == -1:
-        return block
-
-    css = block[opening + 1 : closing]
-    css = CSS_COMMENT_PATTERN.sub("", css)
-    css = re.sub(r"\s+", " ", css)
-    css = re.sub(r"\s*([{}:;,>+~])\s*", r"\1", css)
-    return f"{block[:opening + 1]}{css.strip()}{block[closing:]}"
-
-
 def minify_markup(content: str) -> str:
-    def raw_transform(block: str) -> str:
-        if block.lstrip().lower().startswith("<style"):
-            return minify_css_block(block)
-        return block
-
-    content, raw_blocks = placeholder_blocks(content, RAW_TAG_PATTERN, raw_transform)
-
-    def remove_comment(match: re.Match[str]) -> str:
-        return match.group(0) if match.group(1).lstrip().startswith("[") else ""
-
-    content = COMMENT_PATTERN.sub(remove_comment, content)
-
-    pieces: list[str] = []
-    position = 0
-    for tag in TAG_PATTERN.finditer(content):
-        text = content[position : tag.start()]
-        pieces.append(re.sub(r"\s+", " ", text))
-        pieces.append(tag.group(0))
-        position = tag.end()
-    pieces.append(re.sub(r"\s+", " ", content[position:]))
-    return restore_blocks("".join(pieces), raw_blocks)
+    node = shutil.which("node")
+    if not node:
+        raise RuntimeError("Node.js is required for html-minifier-terser")
+    result = subprocess.run(
+        [node, str(Path(__file__).with_name("minify_html.cjs"))],
+        input=content, capture_output=True, encoding="utf-8", timeout=120,
+    )
+    if result.returncode:
+        raise RuntimeError(result.stderr.strip() or "HTML minification failed")
+    return result.stdout
 
 
 def data_uri_bytes(content: str) -> int:
