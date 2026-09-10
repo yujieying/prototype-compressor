@@ -86,7 +86,7 @@ def output_path(source: Path) -> Path:
     return source.with_name(f"{source.stem}.min{source.suffix}")
 
 
-def compress(source: Path, webp_quality: int | None) -> None:
+def compress(source: Path, webp_quality: int | None, overwrite: bool = False) -> None:
     if source.suffix.lower() != ".html":
         raise ValueError("only .html prototype files are supported")
     if ".min" in source.stem:
@@ -97,7 +97,7 @@ def compress(source: Path, webp_quality: int | None) -> None:
     image_stats = None
     if webp_quality is not None:
         compressed, image_stats = convert_raster_data_uris(compressed, webp_quality)
-    destination = output_path(source)
+    destination = source if overwrite else output_path(source)
     destination.write_bytes(compressed.encode("utf-8"))
 
     before = len(original.encode("utf-8"))
@@ -106,6 +106,7 @@ def compress(source: Path, webp_quality: int | None) -> None:
     data_bytes = data_uri_bytes(original)
     print(f"source: {source}")
     print(f"output: {destination}")
+    print(f"overwrite source: {overwrite}")
     print(f"size: {before} B -> {after} B ({reduction:.1f}% smaller)")
     if image_stats:
         print(
@@ -130,6 +131,11 @@ def main() -> int:
         help="WebP quality for embedded PNG/JPEG images (0-100; default: 78)",
     )
     parser.add_argument(
+        "--overwrite",
+        action="store_true",
+        help="overwrite the source HTML instead of writing a sibling .min.html (default: false)",
+    )
+    parser.add_argument(
         "--no-webp",
         action="store_true",
         help="copy the original without image conversion for comparison",
@@ -145,6 +151,7 @@ def main() -> int:
             compress(
                 source,
                 None if args.no_webp else args.webp_quality,
+                args.overwrite,
             )
         except (RuntimeError, ValueError) as error:
             parser.error(f"{source}: {error}")

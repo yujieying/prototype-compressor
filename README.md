@@ -1,6 +1,6 @@
 # Prototype Compressor
 
-让包含大量内嵌图片的 HTML 原型显著瘦身。将 PNG/JPEG 转为 WebP，保留单文件结构与原始文件，仅依赖 Python 和 cwebp。
+让包含大量内嵌图片的 HTML 原型显著瘦身。将 PNG/JPEG 转为 WebP，保留单文件结构，默认保留原始文件，仅依赖 Python 和 cwebp。
 
 ## 压缩效果
 
@@ -24,7 +24,7 @@
 - 输出压缩前后字节数、压缩比例和图片转换数量。
 - 不进行重复图片引用去重，不压缩 JavaScript 代码。
 
-输出为原文件同目录的 `*.min.html`。重复执行刷新该压缩副本，不追加版本号；原文件始终保留，便于后续修改和重新压缩。
+默认质量为 78，输出为原文件同目录的 `*.min.html`。重复执行刷新该压缩副本，不追加版本号；默认保留原文件。使用 `--overwrite` 可直接覆盖源文件，此模式不生成副本或备份，原始图片数据将被替换；已有的 `*.min.html` 不会同步更新。
 
 ## 环境与运行
 
@@ -42,6 +42,9 @@ python3 scripts/compress_prototype.py /absolute/path/to/PROTO.html
 ```bash
 # 提高图片质量
 python3 scripts/compress_prototype.py --webp-quality 90 /absolute/path/to/PROTO.html
+
+# 使用默认质量 78，直接覆盖源文件
+python3 scripts/compress_prototype.py --overwrite /absolute/path/to/PROTO.html
 
 # 生成不做图片转换的原样副本，用于对比，无需 cwebp
 python3 scripts/compress_prototype.py --no-webp /absolute/path/to/PROTO.html
